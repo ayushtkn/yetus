@@ -391,6 +391,7 @@ function github_locate_pr_patch
 
   # shellcheck disable=SC2034
   PATCHURL="${GITHUB_BASE_URL}/${GITHUB_REPO}/pull/${input}.patch"
+  DIFFURL="${GITHUB_BASE_URL}/${GITHUB_REPO}/pull/${input}.diff"
 
   echo "GITHUB PR #${input} is being downloaded from"
   echo "${apiurl}"
@@ -410,23 +411,21 @@ function github_locate_pr_patch
   echo "  Patch data at $(date)"
 
   # the actual patch file
-  if ! "${CURL}" --silent --fail \
-          -H "Accept: application/vnd.github.v3.patch" \
-          --output "${patchout}" \
-          --location \
-          "${GITHUB_AUTH[@]}" \
-         "${GITHUB_API_URL}/repos/${GITHUB_REPO}/pulls/${input}"; then
-    yetus_debug "github_locate_patch: not a github pull request."
+	  if ! ${CURL} --silent --fail \
+	          --output "${patchout}" \
+	          --location \
+	          -H "Authorization: token ${GITHUB_TOKEN}" \
+	         "${PATCHURL}"; then
+	    yetus_debug "github_locate_patch: not a github pull request."
     return 1
   fi
 
   echo "  Diff data at $(date)"
   if ! "${CURL}" --silent --fail \
-          -H "Accept: application/vnd.github.v3.diff" \
+           -H "Authorization: token ${GITHUB_TOKEN}" \
           --output "${diffout}" \
           --location \
-          "${GITHUB_AUTH[@]}" \
-         "${apiurl}"; then
+         "${DIFFURL}"; then
     yetus_debug "github_locate_patch: cannot download diff"
     return 1
   fi
